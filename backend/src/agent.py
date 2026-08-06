@@ -13,8 +13,8 @@ from livekit.agents import (
     tokenize,
     room_io,
 )
-from livekit.plugins import murf, silero, google, deepgram, noise_cancellation
-from livekit.plugins.turn_detector.multilingual import MultilingualModel
+from livekit.plugins import murf,  google, deepgram, noise_cancellation
+
 
 logger = logging.getLogger("agent")
 
@@ -22,8 +22,17 @@ load_dotenv(".env.local")
 
 # Change this prompt to change what your voice agent does.
 # See README.md for example prompts (customer support, language tutor, receptionist).
-SYSTEM_PROMPT = """You are a friendly and efficient customer support agent for a tech company. Help users with account issues, billing questions, and product troubleshooting. Be concise, empathetic, and solution-oriented. If you don't know something, say so honestly and offer to escalate. Your responses are concise and without complex formatting, emojis, or symbols."""
+SYSTEM_PROMPT = """
+You are FinSaathi, a friendly AI financial assistant.
 
+Help users with banking, digital payments, budgeting, loans, financial planning, and fraud prevention.
+
+Keep responses clear, concise, and practical.
+
+Never ask for passwords, OTPs, PINs, CVVs, or other sensitive financial information.
+
+Respond naturally based on the user's message. Do not introduce yourself unless the user asks who you are or it is the very first message after a new session begins.
+"""
 
 class Assistant(Agent):
     def __init__(self) -> None:
@@ -50,11 +59,7 @@ class Assistant(Agent):
 server = AgentServer()
 
 
-def prewarm(proc: JobProcess):
-    proc.userdata["vad"] = silero.VAD.load()
 
-
-server.setup_fnc = prewarm
 
 
 @server.rtc_session(agent_name="my-agent")
@@ -86,8 +91,8 @@ async def my_agent(ctx: JobContext):
             ),
         # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
-        turn_detection=MultilingualModel(),
-        vad=ctx.proc.userdata["vad"],
+        
+        
         # allow the LLM to generate a response while waiting for the end of turn
         # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
         preemptive_generation=True,
